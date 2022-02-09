@@ -21,6 +21,8 @@ namespace SITConnect
         static string salt;
         byte[] Key;
         byte[] IV;
+        public string action = null;
+
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -44,6 +46,33 @@ namespace SITConnect
             }
             finally { }
             return cipherText;
+        }
+        protected void createLog()
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(SITConnectDBConnectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO ActionLog VALUES (@Email, @DateTime, @Action)"))
+                    {
+                        using (SqlDataAdapter sda = new SqlDataAdapter())
+                        {
+                            cmd.CommandType = CommandType.Text;
+                            cmd.Parameters.AddWithValue("@Email", tb_email.Text.Trim());
+                            cmd.Parameters.AddWithValue("@DateTime", DateTime.Now);
+                            cmd.Parameters.AddWithValue("@Action", action);
+                            cmd.Connection = con;
+                            con.Open();
+                            cmd.ExecuteNonQuery();
+                            con.Close();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
         }
         protected void btn_Submit_Click (object sender, EventArgs e)
         {
@@ -69,8 +98,9 @@ namespace SITConnect
             cipher.GenerateKey();
             Key = cipher.Key;
             IV = cipher.IV;
-
-            createAccount();
+            action = "Registered an account.";
+            createLog();
+        createAccount();
         }
         protected void createAccount()
         {
@@ -83,14 +113,14 @@ namespace SITConnect
                         using (SqlDataAdapter sda = new SqlDataAdapter())
                         {
                             cmd.CommandType = CommandType.Text;
-                            cmd.Parameters.AddWithValue("@FName", tb_fname.Text.Trim());
-                            cmd.Parameters.AddWithValue("@LName", tb_lname.Text.Trim());
-                            cmd.Parameters.AddWithValue("@CCNumber", Convert.ToBase64String(encryptData(tb_ccn.Text.Trim())));
-                            cmd.Parameters.AddWithValue("@CCDate", Convert.ToBase64String(encryptData(tb_ccd.Text.Trim())));
-                            cmd.Parameters.AddWithValue("@CCCVV", Convert.ToBase64String(encryptData(tb_cvv.Text.Trim())));
-                            cmd.Parameters.AddWithValue("@Email", tb_email.Text.Trim());
-                            cmd.Parameters.AddWithValue("@DoB", tb_dob.Text.Trim());
-                            cmd.Parameters.AddWithValue("@Photo", tb_photo.Text.Trim());
+                            cmd.Parameters.AddWithValue("@FName", HttpUtility.HtmlEncode(tb_fname.Text.Trim()));
+                            cmd.Parameters.AddWithValue("@LName", HttpUtility.HtmlEncode(tb_lname.Text.Trim()));
+                            cmd.Parameters.AddWithValue("@CCNumber", HttpUtility.HtmlEncode(Convert.ToBase64String(encryptData(tb_ccn.Text.Trim()))));
+                            cmd.Parameters.AddWithValue("@CCDate", HttpUtility.HtmlEncode(Convert.ToBase64String(encryptData(tb_ccd.Text.Trim()))));
+                            cmd.Parameters.AddWithValue("@CCCVV", HttpUtility.HtmlEncode(Convert.ToBase64String(encryptData(tb_cvv.Text.Trim()))));
+                            cmd.Parameters.AddWithValue("@Email", HttpUtility.HtmlEncode(tb_email.Text.Trim()));
+                            cmd.Parameters.AddWithValue("@DoB", HttpUtility.HtmlEncode(tb_dob.Text.Trim()));
+                            cmd.Parameters.AddWithValue("@Photo", HttpUtility.HtmlEncode(tb_photo.Text.Trim()));
                             cmd.Parameters.AddWithValue("@PasswordHash", finalHash);
                             cmd.Parameters.AddWithValue("@PasswordSalt", salt);
                             cmd.Parameters.AddWithValue("@IV", Convert.ToBase64String(IV));

@@ -101,8 +101,8 @@ namespace SITConnect
         {
            /* if (ValidateCaptcha())
             {*/
-                string pwd = tb_pwd.Text.ToString().Trim();
-                string email = tb_email.Text.ToString().Trim();
+                string pwd = HttpUtility.HtmlEncode(tb_pwd.Text.ToString().Trim());
+                string email = HttpUtility.HtmlEncode(tb_email.Text.ToString().Trim());
 
                 if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(pwd))
                         {
@@ -135,14 +135,14 @@ namespace SITConnect
                         Response.Redirect("HomePage.aspx", false);
                         action = "Successfully logged in.";
                         createLog();
-                    }
+                        }
                         else
                         {
                             lblMessage.Text = "Email or password is not valid. Please try again.";
-                            Response.Redirect("Login.aspx");
-                        }
-
+                            lblMessage.ForeColor = System.Drawing.Color.Red;
                     }
+
+                }
                 }
                 catch (Exception ex)
                 {
@@ -162,7 +162,7 @@ namespace SITConnect
                         using (SqlDataAdapter sda = new SqlDataAdapter())
                         {
                             cmd.CommandType = CommandType.Text;
-                            cmd.Parameters.AddWithValue("@Email" ,tb_email.Text.Trim());
+                            cmd.Parameters.AddWithValue("@Email" ,HttpUtility.HtmlEncode(tb_email.Text.Trim()));
                             cmd.Parameters.AddWithValue("@DateTime", DateTime.Now);
                             cmd.Parameters.AddWithValue("@Action", action);
                             cmd.Connection = con;

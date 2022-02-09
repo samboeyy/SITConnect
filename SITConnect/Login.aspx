@@ -26,7 +26,7 @@
             <br />
 
             <input type ="hidden" id="g-recaptcha-response" name ="g-recaptcha-response" />
-            <asp:Label ID="lblMessage" runat="server" Text="Error message here (lblMessage)"></asp:Label>
+            <asp:Label ID="lblMessage" runat="server" Text="Error message here (lblMessage)" Visible="false"></asp:Label>
         </p>
             <asp:Label ID="lbl_gScore" runat="server" Text =""></asp:Label>
             </fieldset>

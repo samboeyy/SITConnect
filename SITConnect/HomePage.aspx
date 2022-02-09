@@ -23,7 +23,7 @@
                 <br />
                 <p>First Name:<asp:Label ID="lbl_fname" runat="server" ></asp:Label></p>
                 <p>Email:<asp:Label ID="lbl_email" runat="server"></asp:Label></p>
-
+                <asp:Button ID ="btnChangePwd" runat ="server" Text ="Change Password" OnClick ="btnChangePwd_Click" Visible ="true"/>
                 <asp:Button ID ="btnLogout" runat ="server" Text ="Logout"  OnClick="LogoutMe" Visible ="false" />
             </fieldset>
         </div>

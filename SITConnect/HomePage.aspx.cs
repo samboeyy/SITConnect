@@ -125,5 +125,9 @@ namespace SITConnect
                 Response.Cookies["AuthToken"].Expires = DateTime.Now.AddMonths(-20);
             }
         }
+        protected void btnChangePwd_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("ChangePassword.aspx", false);
+        }
     }
 }
