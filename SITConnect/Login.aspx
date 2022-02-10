@@ -20,7 +20,7 @@
         <div>
         <fieldset>
             <p>Email : <asp:TextBox ID ="tb_email" runat="server" Height="35px" Width ="287px" /></p>
-            <p>Password : <asp:TextBox ID ="tb_pwd" runat="server" Height="35px" Width ="290px" /></p>
+            <p>Password : <asp:TextBox ID ="tb_pwd" runat="server" Height="35px" Width ="290px" TextMode ="Password" /></p>
             <p> <asp:Button ID="btnSubmit" runat="server" Text ="Login" OnClick ="LoginMe" Height ="45px" Width ="133px" />
             <br />
             <br />

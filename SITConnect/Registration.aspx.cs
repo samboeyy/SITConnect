@@ -108,7 +108,7 @@ namespace SITConnect
             {
                 using (SqlConnection con = new SqlConnection(SITConnectDBConnectionString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Account VALUES (@FName, @LName, @CCNumber, @CCDate, @CCCVV, @Email, @DoB, @Photo, @PasswordHash, @PasswordSalt, @IV, @Key)"))
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO ACCOUNT VALUES (@FName, @LName, @CCNumber, @CCDate, @CCCVV, @Email, @DoB, @Photo, @PasswordHash, @PasswordSalt, @IV, @Key, @VerificationCode)"))
                     {
                         using (SqlDataAdapter sda = new SqlDataAdapter())
                         {
@@ -120,15 +120,18 @@ namespace SITConnect
                             cmd.Parameters.AddWithValue("@CCCVV", HttpUtility.HtmlEncode(Convert.ToBase64String(encryptData(tb_cvv.Text.Trim()))));
                             cmd.Parameters.AddWithValue("@Email", HttpUtility.HtmlEncode(tb_email.Text.Trim()));
                             cmd.Parameters.AddWithValue("@DoB", HttpUtility.HtmlEncode(tb_dob.Text.Trim()));
-                            cmd.Parameters.AddWithValue("@Photo", HttpUtility.HtmlEncode(tb_photo.Text.Trim()));
+                            cmd.Parameters.AddWithValue("@Photo", DBNull.Value);
                             cmd.Parameters.AddWithValue("@PasswordHash", finalHash);
                             cmd.Parameters.AddWithValue("@PasswordSalt", salt);
                             cmd.Parameters.AddWithValue("@IV", Convert.ToBase64String(IV));
                             cmd.Parameters.AddWithValue("@Key", Convert.ToBase64String(Key));
+                            cmd.Parameters.AddWithValue("@VerificationCode", DBNull.Value);
                             cmd.Connection = con;
                             con.Open();
                             cmd.ExecuteNonQuery();
                             con.Close();
+
+                            Response.Redirect("Login.aspx", false);
                         }
                     }
                 }

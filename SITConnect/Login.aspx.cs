@@ -13,6 +13,7 @@ using System.Text;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Data;
+using System.Net.Mail;
 
 namespace SITConnect
 {
@@ -21,6 +22,7 @@ namespace SITConnect
         string SITConnectDBConnectionString =
            System.Configuration.ConfigurationManager.ConnectionStrings["SITConnectDBConnection"].ConnectionString;
         public string action = null;
+        static string randomNum;
         public class MyObject
         {
             public string success { get; set; }
@@ -128,13 +130,18 @@ namespace SITConnect
                         {
                             Session["LoggedIn"] = tb_email.Text;
                             Response.Redirect("HomePage.aspx", false);
-                        string guid = Guid.NewGuid().ToString();
-                        Session["AuthToken"] = guid;
+                            string guid = Guid.NewGuid().ToString();
+                            Session["AuthToken"] = guid;
 
-                        Response.Cookies.Add(new HttpCookie("AuthToken", guid));
-                        Response.Redirect("HomePage.aspx", false);
-                        action = "Successfully logged in.";
-                        createLog();
+                            Response.Cookies.Add(new HttpCookie("AuthToken", guid));
+
+                            Random random = new Random();
+                            randomNum = random.Next(000000, 999999).ToString();
+                            createOTP(email, randomNum);
+                            SendVerificationCode(randomNum);
+
+                            Response.Redirect("Verification.aspx", false);
+
                         }
                         else
                         {
@@ -151,24 +158,25 @@ namespace SITConnect
                 finally { }
          
         }
-        protected void createLog()
+        protected string createOTP(string email, string randomNumber)
         {
+            string otp = null;
+            SqlConnection con = new SqlConnection(SITConnectDBConnectionString);
+            string sql = "UPDATE ACCOUNT SET VERIFICATIONCODE = @VERIFICATIONCODE WHERE EMAIL = @EMAIL";
+            SqlCommand cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@VerificationCode", randomNumber);
+            cmd.Parameters.AddWithValue("@EMAIL", email);
+
             try
             {
-                using (SqlConnection con = new SqlConnection(SITConnectDBConnectionString))
+                con.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO ActionLog VALUES (@Email, @DateTime, @Action)"))
+                    while (reader.Read())
                     {
-                        using (SqlDataAdapter sda = new SqlDataAdapter())
+                        if (reader["VerificationCode"] != null)
                         {
-                            cmd.CommandType = CommandType.Text;
-                            cmd.Parameters.AddWithValue("@Email" ,HttpUtility.HtmlEncode(tb_email.Text.Trim()));
-                            cmd.Parameters.AddWithValue("@DateTime", DateTime.Now);
-                            cmd.Parameters.AddWithValue("@Action", action);
-                            cmd.Connection = con;
-                            con.Open();
-                            cmd.ExecuteNonQuery();
-                            con.Close();
+                            otp = reader["VerificationCode"].ToString();
                         }
                     }
                 }
@@ -177,44 +185,38 @@ namespace SITConnect
             {
                 throw new Exception(ex.ToString());
             }
+            finally { con.Close(); }
+            return otp;
+        }
+        protected string SendVerificationCode(string vcode)
+        {
+            string address = "SITConnect <sitconnect0123@gmail.com>";
+            string str = null;
+            var smtpClient = new SmtpClient("smtp.gmail.com")
+            {
+                Port = 587,
+                    Credentials = new NetworkCredential("sitconnect0123@gmail.com", "Sitconnect123!"),
+                    EnableSsl = true
+            };
+            var message = new MailMessage
+            {
+                Subject = "SITConnect 2FA Login Authentication",
+                Body = "Dear user, your verification is " + vcode + "\nPlease input this in the verification field to login."
+            };
+            message.To.Add(tb_email.Text.ToString());
+            message.From = new MailAddress(address);
+            try
+            {
+                smtpClient.Send(message);
+                return str;
+            }
+             catch
+            {
+                throw;
+            }
         }
 
-/*        private bool IsLock(string email)
-        {
-            var flag = false;
-            using (SqlConnection connection = new SqlConnection(SITConnectDBConnectionString))
-            {
-                string sql = "select IsLock FROM Account WHERE Email = @Email";
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@Email", email);
-                try
-                {
-                    connection.Open();
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            if (reader["IsLock"] != null)
-                            {
-                                if (reader["IsLock"] != DBNull.Value)
-                                {
-                                    flag = Convert.ToBoolean(reader["IsLock"].ToString());
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.ToString());
-                }
-                finally
-                {
-                    connection.Close();
-                }
-                return flag;
-            }
-        }*/
+       
 
         public bool ValidateCaptcha()
         {
