@@ -178,7 +178,8 @@ namespace SITConnect
                 throw new Exception(ex.ToString());
             }
         }
-        private bool IsLock(string email)
+
+/*        private bool IsLock(string email)
         {
             var flag = false;
             using (SqlConnection connection = new SqlConnection(SITConnectDBConnectionString))
@@ -213,7 +214,7 @@ namespace SITConnect
                 }
                 return flag;
             }
-        }
+        }*/
 
         public bool ValidateCaptcha()
         {
